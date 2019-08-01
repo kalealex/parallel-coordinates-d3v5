@@ -1,6 +1,6 @@
 const svgWidth = 960,
-    svgHeight = 500,
-    margin = { top: 30, right: 10, bottom: 10, left: 30 },
+    svgHeight = 560,
+    margin = { top: 30, right: 30, bottom: 30, left: 30 },
     width = svgWidth - margin.left - margin.right,
     height = svgHeight - margin.top - margin.bottom;
 
@@ -88,6 +88,8 @@ d3.csv("cars.csv")
             .each(function (d) { d3.select(this).call(d3.axisLeft().scale(y[d])); })
             .append("text")
             .style("text-anchor", "middle")
+            .attr("fill", "black")
+            .attr("font-size", "12")
             .attr("y", -9)
             .text(function (d) { return d; });
 
@@ -95,10 +97,11 @@ d3.csv("cars.csv")
         g.append("g")
             .attr("class", "brush")
             .each(function (d) {
-                d3.select(this).call(y[d].brush = d3.brush()
+                d3.select(this).call(y[d].brush = d3.brushY()
                     .extent([[-10, 0], [10, height]])
                     .on("start", brushstart)
-                    .on("brush", brush));
+                    .on("brush", brush)
+                    .on("end", brush));
             })
             .selectAll("rect")
             .attr("x", -8)
@@ -132,6 +135,7 @@ function brush() {
     var actives = [];
     svg.selectAll(".brush")
         .filter(function (d) {
+            console.log(d3.brushSelection(this));
             return d3.brushSelection(this);
         })
         .each(function (key) {
@@ -140,10 +144,14 @@ function brush() {
                 extent: d3.brushSelection(this)
             });
         });
-
-    foreground.style("display", function (d) {
-        return actives.every(function (brushObj) {
-            return brushObj.extent[1][0] <= y[brushObj.dimension](d[brushObj.dimension]) && y[brushObj.dimension](d[brushObj.dimension]) <= brushObj.extent[1][1];
-        }) ? null : "none";
-    });
+    // Change line visibility based on brush extent.
+    if (actives.length === 0) {
+        foreground.style("display", null);
+    } else {
+        foreground.style("display", function (d) {
+            return actives.every(function (brushObj) {
+                return brushObj.extent[0] <= y[brushObj.dimension](d[brushObj.dimension]) && y[brushObj.dimension](d[brushObj.dimension]) <= brushObj.extent[1];
+            }) ? null : "none";
+        });
+    }
 }
