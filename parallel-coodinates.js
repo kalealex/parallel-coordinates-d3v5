@@ -143,7 +143,6 @@ function brush() {
 
     foreground.style("display", function (d) {
         return actives.every(function (brushObj) {
-            console.log(brushObj.extent);
             return brushObj.extent[1][0] <= y[brushObj.dimension](d[brushObj.dimension]) && y[brushObj.dimension](d[brushObj.dimension]) <= brushObj.extent[1][1];
         }) ? null : "none";
     });
